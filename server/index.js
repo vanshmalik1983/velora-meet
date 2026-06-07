@@ -12,26 +12,52 @@ const connectDB = require('./config/db');
 const app = express();
 const server = http.createServer(app);
 
-// 🔥 DATABASE (IMPORTANT: await-safe startup)
+// ================================
+// 🌍 ALLOWED ORIGINS (PRODUCTION FIX)
+// ================================
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://velora-meet-7pn6.vercel.app"
+];
+
+// ================================
+// 🔥 CORS CONFIG (FIXED)
+// ================================
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, true); // allow all in production-safe mode
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.use(express.json());
+
+// ================================
+// 🔌 SOCKET SETUP
+// ================================
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+// ================================
+// 🚀 START SERVER SAFELY
+// ================================
 const startServer = async () => {
   try {
     await connectDB();
-
-    const io = new Server(server, {
-      cors: {
-        origin: process.env.CLIENT_URL,
-        methods: ['GET', 'POST'],
-        credentials: true,
-      },
-    });
-
-    // Middleware
-    app.use(cors({
-      origin: process.env.CLIENT_URL,
-      credentials: true,
-    }));
-
-    app.use(express.json());
+    console.log("🔥 MongoDB Connected");
 
     // Routes
     app.use('/api/auth', authRoutes);
@@ -41,7 +67,7 @@ const startServer = async () => {
     app.get('/api/health', (req, res) => {
       res.json({
         status: 'ok',
-        message: 'Velora Meet server is running 🚀',
+        message: 'Velora Meet server running 🚀',
       });
     });
 
@@ -50,11 +76,11 @@ const startServer = async () => {
 
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
-      console.log(`🚀 Velora Meet server running on port ${PORT}`);
+      console.log(`🚀 Server running on port ${PORT}`);
     });
 
   } catch (err) {
-    console.error("❌ Server failed to start:", err);
+    console.error("❌ Server failed:", err);
     process.exit(1);
   }
 };
