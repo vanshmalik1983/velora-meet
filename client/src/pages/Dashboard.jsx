@@ -51,7 +51,7 @@ export default function Dashboard() {
             <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/30 flex items-center justify-center">
               <Video size={16} className="text-gold" />
             </div>
-            <span className="font-display text-lg font-bold text-shimmer">Velora <Meet></Meet></span>
+            <span className="font-display text-lg font-bold text-shimmer">Velora Meet</span>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
